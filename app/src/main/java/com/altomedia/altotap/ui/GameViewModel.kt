@@ -110,6 +110,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _userMessage.value = null
     }
 
+    fun updateUserProfile(name: String, email: String, photoUrl: String) {
+        viewModelScope.launch {
+            // Wait until userStats is seeded and available
+            var attempts = 0
+            while (userStats.value == null && attempts < 20) {
+                kotlinx.coroutines.delay(100L)
+                attempts++
+            }
+            val current = userStats.value ?: return@launch
+            repository.saveUserStats(
+                current.copy(
+                    userName = name,
+                    userEmail = email,
+                    userPhotoUrl = photoUrl
+                )
+            )
+        }
+    }
+
     fun onAdClicked(adTitle: String) {
         val currentStats = userStats.value ?: return
         val newEnergy = (currentStats.energy + 100).coerceAtMost(currentStats.maxEnergy)

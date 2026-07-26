@@ -71,8 +71,12 @@ export ANDROID_HOME=/home/runner/android-sdk
 
 > **Note**: Replit has no Android emulator — the app cannot be run/previewed here. The output is an APK at `app/build/outputs/apk/debug/app-debug.apk`.
 
+## Google Sign-In
+Login screen appears after splash. Uses **Credential Manager** (no Firebase Auth) — account data is stored locally on the device in `SharedPreferences` (`alto_auth_prefs`). The web client ID is auto-generated from `app/google-services.json` as `R.string.default_web_client_id`.
+
+> **Note**: For Google Sign-In to work on a real device, the SHA-1 fingerprint of the signing keystore must be registered in the Firebase Console (Project Settings → Android App → Add Fingerprint). The debug keystore SHA-1 can be obtained with: `keytool -list -v -keystore debug.keystore -storepass android`
+
 ## Secrets / env vars
-- `GEMINI_API_KEY` — optional; add to `.env` if Gemini AI features are needed (see `.env.example`)
 - `KEYSTORE_PATH`, `STORE_PASSWORD`, `KEY_PASSWORD` — required only for release signing
 
 ## User preferences

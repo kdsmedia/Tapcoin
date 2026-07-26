@@ -30,18 +30,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.altomedia.altotap.R
 import com.altomedia.altotap.ui.theme.GameGoldDark
 import com.altomedia.altotap.ui.theme.GameGoldPrimary
-import com.altomedia.altotap.ui.theme.GameGreenCardDark
-import com.altomedia.altotap.ui.theme.GameGreenDark
-import com.altomedia.altotap.ui.theme.GameGreenMedium
 import com.altomedia.altotap.ui.theme.GameYellowButton
-
-import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun SplashScreen(
@@ -52,7 +48,7 @@ fun SplashScreen(
     LaunchedEffect(Unit) {
         progress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 10000, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 6000, easing = LinearEasing)
         )
         onLoadingComplete()
     }
@@ -119,8 +115,8 @@ fun SplashScreen(
 
             // Game App Title
             Text(
-                text = "RUPIAH TAPPER",
-                fontSize = 28.sp,
+                text = "ALTOTAP",
+                fontSize = 34.sp,
                 fontWeight = FontWeight.Black,
                 color = GameGoldPrimary,
                 style = TextStyle(
@@ -140,7 +136,7 @@ fun SplashScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Loading Progress Section (Tanpa Box Background)
+            // Loading Progress Section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -180,7 +176,7 @@ fun SplashScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Custom Progress Bar Track & Fill
+                // Custom Progress Bar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

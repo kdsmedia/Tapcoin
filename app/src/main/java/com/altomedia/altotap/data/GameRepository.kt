@@ -13,12 +13,13 @@ class GameRepository(private val appDao: AppDao) {
     val withdrawals: Flow<List<WithdrawalEntity>> = appDao.getAllWithdrawals()
 
     suspend fun seedInitialDataIfEmpty() {
-        // Seed UserStats if not present or sanitize 6-digit referral code
+        // Seed UserStats if not present, generate a 6-digit referral code
         val currentStats = appDao.getUserStats().firstOrNull()
         if (currentStats == null) {
             val randomCode = (100000..999999).random().toString()
             appDao.insertOrUpdateUserStats(UserStatsEntity(userId = randomCode))
-        } else if (currentStats.userId.startsWith("CUAN") || currentStats.userId.length != 6 || !currentStats.userId.all { it.isDigit() }) {
+        } else if (currentStats.userId.isBlank() || currentStats.userId.startsWith("CUAN") ||
+            currentStats.userId.length != 6 || !currentStats.userId.all { it.isDigit() }) {
             val randomCode = (100000..999999).random().toString()
             appDao.insertOrUpdateUserStats(currentStats.copy(userId = randomCode))
         }

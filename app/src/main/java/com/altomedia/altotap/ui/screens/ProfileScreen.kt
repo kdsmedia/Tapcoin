@@ -63,6 +63,7 @@ import com.altomedia.altotap.ui.theme.GameTextDark
 @Composable
 fun ProfileScreen(
     userStats: UserStatsEntity?,
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val stats = userStats ?: UserStatsEntity()
@@ -150,7 +151,7 @@ fun ProfileScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "ID: ${stats.userId}",
+                                text = if (stats.userName.isNotBlank()) stats.userName else "ID: ${stats.userId}",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 color = GameTextDark,
@@ -189,11 +190,19 @@ fun ProfileScreen(
                             }
                         }
 
+                        if (stats.userEmail.isNotBlank()) {
+                            Text(
+                                text = stats.userEmail,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = GameTextDark.copy(alpha = 0.85f)
+                            )
+                        }
                         Text(
-                            text = stats.userEmail,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = GameTextDark.copy(alpha = 0.85f)
+                            text = "ID: ${stats.userId}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = GameTextDark.copy(alpha = 0.65f)
                         )
                     }
                 }
@@ -366,6 +375,75 @@ fun ProfileScreen(
                     }
                 )
             }
+        }
+
+        // Section 3: Logout
+        var showLogoutDialog by remember { mutableStateOf(false) }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(androidx.compose.ui.graphics.Color(0xFF8B0000).copy(alpha = 0.18f))
+                .border(1.5.dp, androidx.compose.ui.graphics.Color(0xFFFF4444).copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                .clickable { showLogoutDialog = true }
+                .padding(horizontal = 14.dp, vertical = 14.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Logout",
+                    tint = androidx.compose.ui.graphics.Color(0xFFFF6060),
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Keluar dari Akun",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = androidx.compose.ui.graphics.Color(0xFFFF6060)
+                )
+            }
+        }
+
+        if (showLogoutDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = {
+                    Text(
+                        text = "Keluar dari Akun?",
+                        fontWeight = FontWeight.Bold,
+                        color = GameGoldPrimary
+                    )
+                },
+                text = {
+                    Text(
+                        text = "Data permainan Anda tetap tersimpan di perangkat ini. Anda perlu login kembali dengan Google untuk melanjutkan.",
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    }) {
+                        Text("KELUAR", color = androidx.compose.ui.graphics.Color(0xFFFF6060), fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { showLogoutDialog = false }) {
+                        Text("BATAL", color = GameGoldPrimary, fontWeight = FontWeight.Bold)
+                    }
+                },
+                containerColor = GameGreenCardDark,
+                shape = RoundedCornerShape(16.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
