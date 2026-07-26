@@ -1,6 +1,9 @@
 package com.altomedia.altotap.ui.screens
 
+import android.accounts.AccountManager
 import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
@@ -29,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +41,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -47,26 +48,40 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.altomedia.altotap.R
-import com.altomedia.altotap.auth.AuthResult
 import com.altomedia.altotap.auth.GoogleAuthManager
 import com.altomedia.altotap.auth.GoogleUser
 import com.altomedia.altotap.ui.theme.GameGoldDark
 import com.altomedia.altotap.ui.theme.GameGoldPrimary
 import com.altomedia.altotap.ui.theme.GameGreenCardDark
-import com.altomedia.altotap.ui.theme.GameGreenDark
-import com.altomedia.altotap.ui.theme.GameGreenMedium
 import com.altomedia.altotap.ui.theme.GameYellowButton
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
     authManager: GoogleAuthManager,
     onLoginSuccess: (GoogleUser) -> Unit
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Account-picker result handler
+    val accountPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        isLoading = false
+        if (result.resultCode == Activity.RESULT_OK) {
+            val email = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
+            if (!email.isNullOrBlank()) {
+                authManager.saveUserFromEmail(email)
+                val user = authManager.getCurrentUser()
+                if (user != null) {
+                    onLoginSuccess(user)
+                }
+            } else {
+                errorMessage = "Gagal mendapatkan akun. Coba lagi."
+            }
+        }
+        // If RESULT_CANCELED: user closed picker, just wait — no error shown
+    }
 
     // Pulse animation for the logo
     val pulseAnim = remember { Animatable(1f) }
@@ -102,7 +117,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
             // Logo with pulse
             Box(
                 modifier = Modifier
@@ -128,7 +142,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // App title
             Text(
                 text = "ALTOTAP",
                 fontSize = 34.sp,
@@ -175,7 +188,7 @@ fun LoginScreen(
                         color = GameGoldPrimary
                     )
                     Text(
-                        text = "Login untuk menyimpan progres dan data akun Anda di perangkat ini.",
+                        text = "Pilih akun Google Anda untuk menyimpan progres dan data permainan di perangkat ini.",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Normal,
                         color = Color.White.copy(alpha = 0.75f),
@@ -204,27 +217,9 @@ fun LoginScreen(
                             onClick = {
                                 isLoading = true
                                 errorMessage = null
-                                scope.launch {
-                                    val activity = context as? Activity
-                                    if (activity == null) {
-                                        errorMessage = "Tidak dapat membuka dialog login."
-                                        isLoading = false
-                                        return@launch
-                                    }
-                                    when (val result = authManager.signIn(activity)) {
-                                        is AuthResult.Success -> {
-                                            isLoading = false
-                                            onLoginSuccess(result.user)
-                                        }
-                                        is AuthResult.Cancelled -> {
-                                            isLoading = false
-                                        }
-                                        is AuthResult.Error -> {
-                                            isLoading = false
-                                            errorMessage = result.message
-                                        }
-                                    }
-                                }
+                                accountPickerLauncher.launch(
+                                    authManager.getAccountPickerIntent()
+                                )
                             }
                         )
                     }
@@ -236,7 +231,11 @@ fun LoginScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(Color.Red.copy(alpha = 0.15f))
-                                .border(1.dp, Color.Red.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                                .border(
+                                    1.dp,
+                                    Color.Red.copy(alpha = 0.4f),
+                                    RoundedCornerShape(10.dp)
+                                )
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(
