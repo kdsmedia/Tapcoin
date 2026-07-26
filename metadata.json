@@ -1,0 +1,6 @@
+{
+  "name": "Rupiah Tapper",
+  "description": "Aplikasi game ketuk koin Rupiah dengan fitur upgrade, sewa robot, tugas harian, spin wheel, referensi, dan penarikan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
